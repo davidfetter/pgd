@@ -14,14 +14,29 @@
 # This is helpful in situations where an IDE (eg. NetBeans) allows you to
 # execute scripts with parameters to do some custom action.
 
-# This is where all the source code repositories are created; use absolute path
-pgdDEV_DIR=$HOME/dev
+# If you don't like the build output to be under the source-code/.git/builds/
+# directory, then provide your preference here:
+pgdBUILD_ROOT_OVERRIDE=
 
 # Set environment variables needed by the pg* functions below
 pgdSetVariables()
 {
-	# This is where all the build output will be generated
-	pgdBLD=${pgdDEV_DIR}/builds
+	# This is where all the build output will be generated, by default. See the
+	# function pgdSetGitDir() to see how we influence this variable by changing
+	# the $GIT_DIR environment variable of git.
+	#
+	# Honour the override, if the user has provided one
+	if [ "x$pgdBUILD_ROOT_OVERRIDE" != "x" ] ; then
+		pgdBUILD_ROOT=$pgdBUILD_ROOT_OVERRIDE
+	else # else use the default.
+		local git_dir=$(git rev-parse --git-dir 2>/dev/null) || return 1
+		local abs_git_dir=$(cd $git_dir; pwd)
+		pgdBUILD_ROOT=${abs_git_dir}/builds
+	fi
+
+	if [ ! -e $pgdBUILD_ROOT/README ] ; then
+		createBuildRootReadme
+	fi
 
 	pgdSetBuildDirectory
 	pgdSetPrefix
@@ -35,7 +50,7 @@ pgdSetVariables()
 
 	pgdSaved_CSCOPE_DB=$CSCOPE_DB
 	# cscope_map.vim, a Vim plugin, uses this environment variable
-	export CSCOPE_DB=$pgdBLD/$pgdBRANCH/cscope.out
+	export CSCOPE_DB=$pgdBUILD_ROOT/$pgdBRANCH/cscope.out
 
 	pgdSaved_PATH=$PATH
 	export PATH=$pgdPREFIX/bin:/mingw/lib:$PATH
@@ -52,7 +67,7 @@ pgdSetVariables()
 
 pgdInvalidateVariables()
 {
-	unset pgdBLD
+	unset pgdBUILD_ROOT
 
 	unset B
 	unset pgdPREFIX
@@ -119,6 +134,7 @@ pgdDetectBranchChange()
 	fi
 
 	if [ "x$pgdSAVED_BRANCH_NAME" != "x$pgdBRANCH" ] ; then
+		# Do these operations only on a branch change.
 		pgdInvalidateVariables
 		pgdSetVariables
 	fi
@@ -139,9 +155,9 @@ pgdSetBuildDirectory()
 
 	# If the optional parameter is not provided
 	if [ "x$1" = "x" ] ; then
-		# $pgdBLD is absolute path, hence we need not use the `cd ...; pwd`
+		# $pgdBUILD_ROOT is absolute path, hence we need not use the `cd ...; pwd`
 		# trick here.
-		export B=$pgdBLD/$pgdBRANCH
+		export B=$pgdBUILD_ROOT/$pgdBRANCH
 	else
 		export B=`cd $1; pwd`
 	fi
@@ -161,8 +177,8 @@ pgdSetPrefix()
 	fi
 
 	# We're not using $B/db here, since in non-VPATH builds $B is the same as
-	# source directory, and we don't want to it to be there.
-	pgdPREFIX=$pgdBLD/$pgdBRANCH/db
+	# source directory, and we don't want the build output to land there.
+	pgdPREFIX=$pgdBUILD_ROOT/$pgdBRANCH/db
 
 	return 0
 }
@@ -227,7 +243,7 @@ pgdSetPGFlavor()
 	fi
 
 	# If the configure.in file contains the word EnterpriseDB, then we're
-	# we're working with EnterpriseDB sources.
+	# working with EnterpriseDB sources.
 	grep -m 1 EnterpriseDB $src_dir/configure.in 2>&1 > /dev/null
 	if [ $? -eq 0 ] ; then
 		pgdFLAVOR="edb"
@@ -404,7 +420,7 @@ pgconfigure()
 
 	# If $ccacher variable is not set, then ./configure behaves as if CC variable
 	# was not specified, and uses the default mechanism to find a compiler.
-	( cd $B; $src_dir/configure --prefix=$pgdPREFIX CC="${ccacher}" --enable-debug --enable-cassert CFLAGS=-O0 --enable-depend --enable-thread-safety --with-openssl "$@" )
+	( cd $B && $src_dir/configure --prefix=$pgdPREFIX CC="${ccacher}" --enable-debug --enable-cassert CFLAGS=-O0 --enable-depend --enable-thread-safety --with-openssl "$@" )
 
 	return $?
 }
@@ -435,7 +451,7 @@ pglsfiles()
 	local vpath_src_dir
 
 	#  If working in VPATH build
-	if [ $B = `cd $pgdBLD/$pgdBRANCH; pwd` ] ; then
+	if [ $B = `cd $pgdBUILD_ROOT/$pgdBRANCH; pwd` ] ; then
 		vpath_src_dir=$B/src/
 
 		# If the src/ directory under build directory doesn't exist yet (this
@@ -478,7 +494,7 @@ pgUnsetGitDir()
 
 # Set $GIT_DIR. If provided with a parameter, set the variable to that directory
 # else set the variable to `pwd`
-pgSetGitDir()
+pgdSetGitDir()
 {
 	if [ "x$1" != "x" ] ; then
 		GIT_DIR=`cd "$1"; pwd`/.git/
@@ -561,6 +577,45 @@ function pgshowprocesses()
 	# in the process status.
 	ps faux | grep -vw grep | grep -wE 'postmaster|postgres'
 }
+
+function createBuildRootReadme()
+{
+	cat > $pgdBUILD_ROOT/README << EOF
+This directory is managed by pgd (https://github.com/gurjeet/pgd).
+
+This directory contains the build output and installation of various branches of
+its parent Git directory.
+
+Feel free to remove any of the directories here, but remember that the data
+stored in the database under that directory will also be lost.
+EOF
+}
+
+# Commented out function; I don't want to make decisions for people. They can
+# choose how they want to name their branches. Function wasn't complete, but
+# keeping it around in case I want to implement it for private use.
+: << 'COMMENT'
+function pgdBuildStableBranches()
+{
+	# `git-branch -r` output looks like this:
+	#	origin/REL8_1_STABLE
+	for branch_name_U in $(git branch -r | grep STABLE | cut -d '/' -f 2 | uniq ); do
+		# lower-case the branch name, and replace underscore with dots
+		branch_name=$(echo branch_name_U | tr [A-Z_] [a-z.])
+
+		# Replace rel8.1 with pg_8.1
+		branch_name=${branch_name/#rel/pg_}
+
+		# Replace edbas9.1 with edb_8.1
+		branch_name=${branch_name/#edbas/edb_}
+
+		# Replace trailing .stable with _stable
+		branch_name=${branch_name/%.stable/_stable}
+
+		echo Checking out
+	done
+}
+COMMENT
 
 # Append branch detection code to $PROMPT_COMMAND so that we can detect Git
 # branch change ASAP.
