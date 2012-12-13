@@ -15,84 +15,84 @@
 # execute scripts with parameters to do some custom action.
 
 # This is where all the source code repositories are created; use absolute path
-vxzDEV_DIR=$HOME/dev
+pgdDEV_DIR=$HOME/dev
 
 # Set environment variables needed by the pg* functions below
-vxzSetVariables()
+pgdSetVariables()
 {
 	# This is where all the build output will be generated
-	vxzBLD=${vxzDEV_DIR}/builds
+	pgdBLD=${pgdDEV_DIR}/builds
 
-	vxzSetBuildDirectory
-	vxzSetPrefix
+	pgdSetBuildDirectory
+	pgdSetPrefix
 
-	vxzSaved_PGDATA=$PGDATA
-	vxzSetPGDATA
+	pgdSaved_PGDATA=$PGDATA
+	pgdSetPGDATA
 
-	vxzSetPGFlavor
-	vxzSetPSQL
-	vxzSetPGSUNAME
+	pgdSetPGFlavor
+	pgdSetPSQL
+	pgdSetPGSUNAME
 
-	vxzSaved_CSCOPE_DB=$CSCOPE_DB
+	pgdSaved_CSCOPE_DB=$CSCOPE_DB
 	# cscope_map.vim, a Vim plugin, uses this environment variable
-	export CSCOPE_DB=$vxzBLD/$vxzBRANCH/cscope.out
+	export CSCOPE_DB=$pgdBLD/$pgdBRANCH/cscope.out
 
-	vxzSaved_PATH=$PATH
-	export PATH=$vxzPREFIX/bin:/mingw/lib:$PATH
+	pgdSaved_PATH=$PATH
+	export PATH=$pgdPREFIX/bin:/mingw/lib:$PATH
 
 	vxsSaved_LD_LIBRARY_PATH=$LD_LIBRARY_PATH
-	export LD_LIBRARY_PATH=$vxzPREFIX/lib:$LD_LIBRARY_PATH
+	export LD_LIBRARY_PATH=$pgdPREFIX/lib:$LD_LIBRARY_PATH
 
 	# This will do its job in VPATH builds, and nothing in non-VPATH builds
 	mkdir -p $B
 
 	# This will do its job in non-VPATH builds, and nothing in VPATH builds
-	mkdir -p $vxzPREFIX
+	mkdir -p $pgdPREFIX
 }
 
-vxzInvalidateVariables()
+pgdInvalidateVariables()
 {
-	unset vxzBLD
+	unset pgdBLD
 
 	unset B
-	unset vxzPREFIX
-	unset vxzFLAVOR
-	unset vxzPSQL
-	unset vxzPGSUNAME
+	unset pgdPREFIX
+	unset pgdFLAVOR
+	unset pgdPSQL
+	unset pgdPGSUNAME
 
-	if [ "x$vxzSaved_PATH" != "x" ] ; then
-		export PATH=$vxzSaved_PATH
+	if [ "x$pgdSaved_PATH" != "x" ] ; then
+		export PATH=$pgdSaved_PATH
 	fi
-	unset vxzSaved_PATH
+	unset pgdSaved_PATH
 
-	if [ "x$vxzSaved_LD_LIBRARY_PATH" != "x" ] ; then
-		export LD_LIBRARY_PATH=$vxzSaved_LD_LIBRARY_PATH
+	if [ "x$pgdSaved_LD_LIBRARY_PATH" != "x" ] ; then
+		export LD_LIBRARY_PATH=$pgdSaved_LD_LIBRARY_PATH
 	fi
-	unset vxzSaved_LD_LIBRARY_PATH
+	unset pgdSaved_LD_LIBRARY_PATH
 
-	if [ "x$vxzSaved_PGDATA" != "x" ] ; then
-		PGDATA=$vxzSaved_PGDATA
+	if [ "x$pgdSaved_PGDATA" != "x" ] ; then
+		PGDATA=$pgdSaved_PGDATA
 	else
 		unset PGDATA
 	fi
-	unset vxzSaved_PGDATA
+	unset pgdSaved_PGDATA
 
-	if [ "x$vxzSaved_CSCOPE_DB" != "x" ] ; then
-		export CSCOPE_DB=$vxzSaved_CSCOPE_DB
+	if [ "x$pgdSaved_CSCOPE_DB" != "x" ] ; then
+		export CSCOPE_DB=$pgdSaved_CSCOPE_DB
 	else
 		unset CSCOPE_DB
 	fi
-	unset vxzSaved_CSCOPE_DB
+	unset pgdSaved_CSCOPE_DB
 
-	unset vxzBRANCH
+	unset pgdBRANCH
 }
 
-#If return code is 0, $vxzBRANCH will contain branch name.
-vxzSetGitBranchName()
+#If return code is 0, $pgdBRANCH will contain branch name.
+pgdSetGitBranchName()
 {
-	vxzBRANCH=`git branch | grep \* | grep -v "\(no branch\)" | cut -d ' ' -f 2`
+	pgdBRANCH=`git branch | grep \* | grep -v "\(no branch\)" | cut -d ' ' -f 2`
 
-	if [ "x$vxzBRANCH" = "x" ] ; then
+	if [ "x$pgdBRANCH" = "x" ] ; then
 		echo WARNING: Could not get a branch name
 		return 1
 	fi
@@ -100,37 +100,37 @@ vxzSetGitBranchName()
 	return 0
 }
 
-vxzDetectBranchChange()
+pgdDetectBranchChange()
 {
-	vxzSetPGFlavor >/dev/null 2>&1
+	pgdSetPGFlavor >/dev/null 2>&1
 
 	if [ $? -ne 0 ] ; then
 		echo Not in Postgres sources 1>&2
-		vxzInvalidateVariables
+		pgdInvalidateVariables
 		return 1
 	fi
 
-	local vxzSAVED_BRANCH_NAME=$vxzBRANCH
+	local pgdSAVED_BRANCH_NAME=$pgdBRANCH
 
-	vxzSetGitBranchName
+	pgdSetGitBranchName
 
 	if [ $? -ne 0 ] ; then
 		return 1
 	fi
 
-	if [ "x$vxzSAVED_BRANCH_NAME" != "x$vxzBRANCH" ] ; then
-		vxzInvalidateVariables
-		vxzSetVariables
+	if [ "x$pgdSAVED_BRANCH_NAME" != "x$pgdBRANCH" ] ; then
+		pgdInvalidateVariables
+		pgdSetVariables
 	fi
 
 	return 0
 }
 
 # set $B to the location where builds should happen
-vxzSetBuildDirectory()
+pgdSetBuildDirectory()
 {
-	if [ "x$vxzBRANCH" = "x" ] ; then
-		vxzSetGitBranchName
+	if [ "x$pgdBRANCH" = "x" ] ; then
+		pgdSetGitBranchName
 	fi
 
 	if [ $? -ne 0 ] ; then
@@ -139,9 +139,9 @@ vxzSetBuildDirectory()
 
 	# If the optional parameter is not provided
 	if [ "x$1" = "x" ] ; then
-		# $vxzBLD is absolute path, hence we need not use the `cd ...; pwd`
+		# $pgdBLD is absolute path, hence we need not use the `cd ...; pwd`
 		# trick here.
-		export B=$vxzBLD/$vxzBRANCH
+		export B=$pgdBLD/$pgdBRANCH
 	else
 		export B=`cd $1; pwd`
 	fi
@@ -150,10 +150,10 @@ vxzSetBuildDirectory()
 }
 
 # Set Postgres' installation prefix directory
-vxzSetPrefix()
+pgdSetPrefix()
 {
-	if [ "x$vxzBRANCH" = "x" ] ; then
-		vxzSetGitBranchName
+	if [ "x$pgdBRANCH" = "x" ] ; then
+		pgdSetGitBranchName
 	fi
 
 	if [ $? -ne 0 ] ; then
@@ -162,22 +162,22 @@ vxzSetPrefix()
 
 	# We're not using $B/db here, since in non-VPATH builds $B is the same as
 	# source directory, and we don't want to it to be there.
-	vxzPREFIX=$vxzBLD/$vxzBRANCH/db
+	pgdPREFIX=$pgdBLD/$pgdBRANCH/db
 
 	return 0
 }
 
 #Set $PGDATA
-vxzSetPGDATA()
+pgdSetPGDATA()
 {
-	if [ "x$vxzPREFIX" = "x" ] ; then
-		vxzSetPrefix
+	if [ "x$pgdPREFIX" = "x" ] ; then
+		pgdSetPrefix
 	fi
 
 	if [ $? = "0" ] ; then
 		# If the optional parameter is not provided
 		if [ "x$1" = "x" ] ; then
-			PGDATA=$vxzPREFIX/data
+			PGDATA=$pgdPREFIX/data
 		else # .. use the data directory provided by the user
 			PGDATA=`cd $1; pwd`
 		fi
@@ -189,7 +189,7 @@ vxzSetPGDATA()
 }
 
 # Check if $PGDATA directory exists
-vxzCheckDATADirectoryExists()
+pgdCheckDATADirectoryExists()
 {
   if [ ! -d $PGDATA ] ; then
     echo ERROR: \$PGDATA not set\; $PGDATA, no such directory 1>&2
@@ -199,21 +199,21 @@ vxzCheckDATADirectoryExists()
   return 0;
 }
 
-vxzSetSTARTShell()
+pgdSetSTARTShell()
 {
 	# It is a known bug that on MinGW's rxvt, psql's prompt doesn't show up; psql
 	# works fine, it's just that the prompt is always missing, hence we have to
 	# start a new console and assign it to psql
 	if [ X$MSYSTEM = "XMINGW32" ] ; then
-		vxzSTART='start '
+		pgdSTART='start '
 	else
-		vxzSTART=' '
+		pgdSTART=' '
 	fi
 
 	return 0
 }
 
-vxzSetPGFlavor()
+pgdSetPGFlavor()
 {
 	local src_dir
 
@@ -230,7 +230,7 @@ vxzSetPGFlavor()
 	# we're working with EnterpriseDB sources.
 	grep -m 1 EnterpriseDB $src_dir/configure.in 2>&1 > /dev/null
 	if [ $? -eq 0 ] ; then
-		vxzFLAVOR="edb"
+		pgdFLAVOR="edb"
 		return 0
 	fi
 
@@ -238,36 +238,36 @@ vxzSetPGFlavor()
 	# with Postgres sources.
 	grep -m 1 PostgreSQL $src_dir/configure.in 2>&1 > /dev/null
 	if [ $? -eq 0 ] ; then
-		vxzFLAVOR="postgres"
+		pgdFLAVOR="postgres"
 		return 0
 	fi
 
 	return 1
 }
 
-vxzSetPSQL()
+pgdSetPSQL()
 {
-	if [ "x$vxzFLAVOR" = "x" ] ; then
-		vxzSetPGFlavor
+	if [ "x$pgdFLAVOR" = "x" ] ; then
+		pgdSetPGFlavor
 	fi
 
-	if [ "x$vxzFLAVOR" = "xpostgres" ] ; then
-		vxzPSQL=psql
-	elif [ "x$vxzFLAVOR" = "xedb" ] ; then
-		vxzPSQL=edb-psql
+	if [ "x$pgdFLAVOR" = "xpostgres" ] ; then
+		pgdPSQL=psql
+	elif [ "x$pgdFLAVOR" = "xedb" ] ; then
+		pgdPSQL=edb-psql
 	fi
 }
 
-vxzSetPGSUNAME()
+pgdSetPGSUNAME()
 {
-	if [ "x$vxzFLAVOR" = "x" ] ; then
-		vxzSetPGFlavor
+	if [ "x$pgdFLAVOR" = "x" ] ; then
+		pgdSetPGFlavor
 	fi
 
-	if [ "x$vxzFLAVOR" = "xpostgres" ] ; then
-		vxzPGSUNAME=postgres
-	elif [ "x$vxzFLAVOR" = "xedb" ] ; then
-		vxzPGSUNAME=edb
+	if [ "x$pgdFLAVOR" = "xpostgres" ] ; then
+		pgdPGSUNAME=postgres
+	elif [ "x$pgdFLAVOR" = "xedb" ] ; then
+		pgdPGSUNAME=edb
 	fi
 }
 
@@ -277,17 +277,17 @@ vxzSetPGSUNAME()
 
 pgsql()
 {
-	vxzDetectBranchChange || return $?
+	pgdDetectBranchChange || return $?
 
-	# This check is not part of vxzDetectBranchChange() because a change in
+	# This check is not part of pgdDetectBranchChange() because a change in
 	# branch does not affect this variable
-	if [ "x$vxzSTART" = "x" ] ; then
-		vxzSetSTARTShell
+	if [ "x$pgdSTART" = "x" ] ; then
+		pgdSetSTARTShell
 	fi
 
 	# By default connect as superuser. This will be overridden if the user calls
 	# calls this function as `pgsql -U someothername`
-	$vxzSTART$vxzPREFIX/bin/$vxzPSQL -U $vxzPGSUNAME "$@"
+	$pgdSTART$pgdPREFIX/bin/$pgdPSQL -U $pgdPGSUNAME "$@"
 
 	local ret_code=$?
 
@@ -302,86 +302,86 @@ pgsql()
 
 pginitdb()
 {
-	vxzDetectBranchChange || return $?
+	pgdDetectBranchChange || return $?
 
-	$vxzPREFIX/bin/initdb -D $PGDATA -U $vxzPGSUNAME
+	$pgdPREFIX/bin/initdb -D $PGDATA -U $pgdPGSUNAME
 }
 
 pgstart()
 {
-	vxzDetectBranchChange || return $?
+	pgdDetectBranchChange || return $?
 
-	vxzCheckDATADirectoryExists || return $?
+	pgdCheckDATADirectoryExists || return $?
 
 	{
 	# Set $PGUSER to DB superuser's name so that `pg_ctl -w` can connect to
 	# instance, to be able to check its status
 
-	local PGUSER=$vxzPGSUNAME
+	local PGUSER=$pgdPGSUNAME
 	export PGUSER
 
 	# use pgstatus() to check if the server is already running
-	pgstatus || $vxzPREFIX/bin/pg_ctl -D $PGDATA -l $PGDATA/server.log -w start "$@"
+	pgstatus || $pgdPREFIX/bin/pg_ctl -D $PGDATA -l $PGDATA/server.log -w start "$@"
 	}
 
 	# Record pg_ctl's return code, so that it can be returned as return value
 	# of this function.
 	local ret_value=$?
 
-	$vxzPREFIX/bin/pg_controldata $PGDATA | grep 'Database cluster state'
+	$pgdPREFIX/bin/pg_controldata $PGDATA | grep 'Database cluster state'
 
 	return $ret_value
 }
 
 pgstatus()
 {
-	vxzDetectBranchChange || return $?
+	pgdDetectBranchChange || return $?
 
-	vxzCheckDATADirectoryExists || return $?
+	pgdCheckDATADirectoryExists || return $?
 
 	# if we adorn the variable with 'local' keyword, then pg_ctl's exit code is
-	# lost; hence we prefix it with vxz and unset it before returning.
-	vxzpg_ctl_output=$($vxzPREFIX/bin/pg_ctl -D $PGDATA status)
+	# lost; hence we prefix it with pgd and unset it before returning.
+	pgdpg_ctl_output=$($pgdPREFIX/bin/pg_ctl -D $PGDATA status)
 
 	local rc=$?
 
 	# Emit the pg_ctl output to stdout or stderr depending on whether or not the
 	# pg_ctl command succeeded.
 	#
-	# We have to wrap the $vxzpg_ctl_output in double quotes, because otherwise
+	# We have to wrap the $pgdpg_ctl_output in double quotes, because otherwise
 	# echo does not print the newline characters in the content of that variable
 	if [ $rc -eq 0 ] ; then
-		echo "$vxzpg_ctl_output"
+		echo "$pgdpg_ctl_output"
 	else
-		echo "$vxzpg_ctl_output" 1>&2
+		echo "$pgdpg_ctl_output" 1>&2
 	fi
 
-	unset vxzpg_ctl_output
+	unset pgdpg_ctl_output
 	return $rc
 }
 
 pgreload()
 {
-	vxzDetectBranchChange || return $?
+	pgdDetectBranchChange || return $?
 
-	vxzCheckDATADirectoryExists || return $?
+	pgdCheckDATADirectoryExists || return $?
 
-	$vxzPREFIX/bin/pg_ctl -D $PGDATA reload
+	$pgdPREFIX/bin/pg_ctl -D $PGDATA reload
 
 	return $?
 }
 
 pgstop()
 {
-	vxzDetectBranchChange || return $?
+	pgdDetectBranchChange || return $?
 
 	# Call pgstatus() to check if the server is running.
-	pgstatus && $vxzPREFIX/bin/pg_ctl -D $PGDATA stop "$@"
+	pgstatus && $pgdPREFIX/bin/pg_ctl -D $PGDATA stop "$@"
 }
 
 pgconfigure()
 {
-	vxzDetectBranchChange || return $?
+	pgdDetectBranchChange || return $?
 
 	local src_dir
 
@@ -404,14 +404,14 @@ pgconfigure()
 
 	# If $ccacher variable is not set, then ./configure behaves as if CC variable
 	# was not specified, and uses the default mechanism to find a compiler.
-	( cd $B; $src_dir/configure --prefix=$vxzPREFIX CC="${ccacher}" --enable-debug --enable-cassert CFLAGS=-O0 --enable-depend --enable-thread-safety --with-openssl "$@" )
+	( cd $B; $src_dir/configure --prefix=$pgdPREFIX CC="${ccacher}" --enable-debug --enable-cassert CFLAGS=-O0 --enable-depend --enable-thread-safety --with-openssl "$@" )
 
 	return $?
 }
 
 pgmake()
 {
-	vxzDetectBranchChange || return $?
+	pgdDetectBranchChange || return $?
 
 	# Append "$@" to the command so that we can do `pgmake -C src/backend/`, or
 	# anything similar. `make` allows multiple -C options, and does the right thing
@@ -422,7 +422,7 @@ pgmake()
 
 pglsfiles()
 {
-	vxzDetectBranchChange || return $?
+	pgdDetectBranchChange || return $?
 
 	local src_dir
 
@@ -435,7 +435,7 @@ pglsfiles()
 	local vpath_src_dir
 
 	#  If working in VPATH build
-	if [ $B = `cd $vxzBLD/$vxzBRANCH; pwd` ] ; then
+	if [ $B = `cd $pgdBLD/$pgdBRANCH; pwd` ] ; then
 		vpath_src_dir=$B/src/
 
 		# If the src/ directory under build directory doesn't exist yet (this
@@ -464,7 +464,7 @@ pgcscope()
 {
 	# If we're not in Postgres sources, cscope in the next command will hang
 	# until interrupted, so bail out sooner if we're not in PG sources.
-	vxzDetectBranchChange || return $?
+	pgdDetectBranchChange || return $?
 
 	# Emit a list of all source files,and make cscope consume that list from stdin
 	pglsfiles --no-symlink | cscope -Rb -f $CSCOPE_DB -i -
@@ -500,13 +500,13 @@ if [ "x$BASH_SOURCE" != "x" ] ; then
 	if [ "x$BASH_ENV" = "x" ] ; then
 
 		# Resolve file name to absolute path
-		vxztmpf=$(basename $BASH_SOURCE)
-		vxztmpd=$(dirname $BASH_SOURCE)
-		vxztmpp=$(cd $vxztmpd; pwd)
+		pgdtmpf=$(basename $BASH_SOURCE)
+		pgdtmpd=$(dirname $BASH_SOURCE)
+		pgdtmpp=$(cd $pgdtmpd; pwd)
 
-		export BASH_ENV=$vxztmpp/$vxztmpf
+		export BASH_ENV=$pgdtmpp/$pgdtmpf
 
-		unset vxztmpf vxztmpd vxztmpp
+		unset pgdtmpf pgdtmpd pgdtmpp
 	#else
 		#echo Not setting \$BASH_ENV since it is already set \(maybe by someone else\) 2>&1
 	fi
@@ -535,7 +535,7 @@ function getPIDTree()
 function pgserverprocesses()
 {
 	# Make sure we're in postgres source directory
-	vxzDetectBranchChange || return $?
+	pgdDetectBranchChange || return $?
 
 	# Make sure postgres server is running. Suppress output only if successful.
 	# That is, show only stderr stream of the pgstatus().
@@ -567,7 +567,7 @@ function pgshowprocesses()
 #
 # A semicolon at the beginning of $PROMPT_COMMAND causes an error, so replace an
 # empty $PROMPT_COMMAND with a : which is legal Bash syntax.
-PROMPT_COMMAND=${PROMPT_COMMAND:-:}';vxzDetectBranchChange >/dev/null 2>&1'
+PROMPT_COMMAND=${PROMPT_COMMAND:-:}';pgdDetectBranchChange >/dev/null 2>&1'
 
 # If the script was invoked with some parameters, then assume $1 to be a
 # function's name (possibly defined in this file), and pass the rest of the
