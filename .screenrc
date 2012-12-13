@@ -1,4 +1,0 @@
-#contents of ~/.screenrc
-
-hardstatus alwayslastline
-hardstatus string '%{= rW}%-Lw%{= wb}%54>%n%f* %t%{-}%+Lw%< %{= bW}%-=%h|%c:%s|%H %l%{-}'
