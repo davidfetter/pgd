@@ -99,7 +99,15 @@ pgdInvalidateVariables()
 #If return code is 0, $pgdBRANCH will contain branch name.
 pgdSetGitBranchName()
 {
-	pgdBRANCH=`git branch | grep \* | grep -v "\(no branch\)" | cut -d ' ' -f 2`
+	local git_cmd
+
+	if [ "x$pgdGIT_DIR" != "x" ] ; then
+		git_cmd="git --git-dir=${pgdGIT_DIR}"
+	else
+		git_cmd="git"
+	fi
+
+	pgdBRANCH=$( $git_cmd branch | grep \* | grep -v "\(no branch\)" | cut -d ' ' -f 2)
 
 	if [ "x$pgdBRANCH" = "x" ] ; then
 		echo WARNING: Could not get a branch name
@@ -227,9 +235,11 @@ pgdSetPGFlavor()
 {
 	local src_dir
 
-	local git_dir=$(git rev-parse --git-dir 2>/dev/null) || return 1
-
-	src_dir=`cd $git_dir/../; pwd`
+	if [ "x$pgdGIT_DIR" != "x" ] ; then
+		src_dir=$pgdGIT_DIR/../
+	else
+		src_dir=`pwd`
+	fi
 
 	if [ ! -f $src_dir/configure.in ] ; then
 		echo "WARNING: Are you sure that $src_dir is a Postgres source directory?" 1>&2
@@ -395,8 +405,8 @@ pgconfigure()
 
 	local src_dir
 
-	if [ "x$GIT_DIR" != "x" ] ; then
-		src_dir=$GIT_DIR/../
+	if [ "x$pgdGIT_DIR" != "x" ] ; then
+		src_dir=$pgdGIT_DIR/../
 	else
 		src_dir=`pwd`
 	fi
@@ -438,8 +448,8 @@ pgdlsfiles()
 
 	local src_dir
 
-	if [ "x$GIT_DIR" != "x" ] ; then
-		src_dir=$GIT_DIR/../
+	if [ "x$pgdGIT_DIR" != "x" ] ; then
+		src_dir=$pgdGIT_DIR/../
 	else
 		src_dir=`pwd`
 	fi
@@ -486,20 +496,25 @@ pgdcscope()
 # unset $GIT_DIR
 pgdUnsetGitDir()
 {
-	unset GIT_DIR
+	unset pgdGIT_DIR
 }
 
-# Set $GIT_DIR. If provided with a parameter, set the variable to that directory
-# else set the variable to `pwd`
+# Set the directory which contains Postgres source code
+#
+# Specifically, this directory should contain a .git/ directory and Postgres
+# source code cheked out from that directory.
+#
+# If provided with a parameter, set the variable to that directory else set the
+# variable to `pwd`
 pgdSetGitDir()
 {
 	if [ "x$1" != "x" ] ; then
-		GIT_DIR=`cd "$1"; pwd`/.git/
+		pgdGIT_DIR=`cd "$1"; pwd`/.git/
 	else
-		GIT_DIR=`pwd`/.git/
+		pgdGIT_DIR=`pwd`/.git/
 	fi
 
-	export GIT_DIR
+	export pgdGIT_DIR
 }
 
 # All the functions defined in this file are available to interactive shells,
