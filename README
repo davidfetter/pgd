@@ -2,22 +2,10 @@ TOOD :
 1) Convert this file to markdown format (consider using http://oscargodson.github.com/EpicEditor/)
 2) Improve and test the instructions.
 
+Postgres Development Environment setup on Linux
+===============================================
 
-Dev Environment setup on Linux (RedHat, CentOS, Fedora, and derivatives)
-=========================================================================
-
-
-.) After OS installation, create a normal user named gurjeet.
-
-.) In /etc/sodoers file, look for
-
-root    ALL(=ALL) ALL
-
-and add the following line under that:
-
-gurjeet ALL(=ALL) ALL
-
-.) Add CentOS testing repos for latest version of git and gitk.
+.) On CentOS, add testing repos to get latest version of git and gitk.
 
 Download and place the following files in /etc/yum.repos.d/ , and then set the
 enabled parameter to on for the testing repositories.
@@ -26,16 +14,21 @@ http://centos.karan.org/kbsingh-CentOS-Extras.repo
 http://centos.karan.org/kbsingh-CentOS-Misc.repo
 
 
-.) Install utilities
+.) Install prerequisites
+
+CentOS and siblings:
 yum install screen git gitk gcc gdb make flex bison readline-devel libz-dev libssl-dev
 
-(Debian/Ubuntu: libreadline-dev)
+Debian and siblings
+apt-get install screen git gitk gcc gdb make flex bison libreadline-dev libz-dev libssl-dev
 
-.) Install EDB specific packages
+.) Install packages required to build EnterpriseDB
 
+CentOS and siblings:
 yum install libxml2-devel libxslt-devel
 
-(Debian/Ubuntu: libxml2-dev libxslt-dev)
+Debian and siblings
+apt-get install libxml2-dev libxslt-dev
 
 .) For CentOS 5, follow Greg's instructions to upgrade flex version
 
