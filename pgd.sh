@@ -29,13 +29,7 @@ pgdSetVariables()
 	if [ "x$pgdBUILD_ROOT_OVERRIDE" != "x" ] ; then
 		pgdBUILD_ROOT=$pgdBUILD_ROOT_OVERRIDE
 	else # else use the default.
-		local git_dir=$(git rev-parse --git-dir 2>/dev/null) || return 1
-		local abs_git_dir=$(cd $git_dir; pwd)
-		pgdBUILD_ROOT=${abs_git_dir}/builds
-	fi
-
-	if [ ! -e $pgdBUILD_ROOT/README ] ; then
-		createBuildRootReadme
+		pgdBUILD_ROOT=${HOME}/dev/pgdbuilds
 	fi
 
 	pgdSetBuildDirectory
@@ -420,7 +414,9 @@ pgconfigure()
 
 	# If $ccacher variable is not set, then ./configure behaves as if CC variable
 	# was not specified, and uses the default mechanism to find a compiler.
-	( cd $B && $src_dir/configure --prefix=$pgdPREFIX CC="${ccacher}" --enable-debug --enable-cassert CFLAGS=-O0 --enable-depend --enable-thread-safety --with-openssl "$@" )
+	( mkdir -p $B	\
+		&& cd $B	\
+		&& $src_dir/configure --prefix=$pgdPREFIX CC="${ccacher}" --enable-debug --enable-cassert CFLAGS=-O0 --enable-depend --enable-thread-safety --with-openssl "$@" )
 
 	return $?
 }
@@ -436,7 +432,7 @@ pgmake()
 	return $?
 }
 
-pglsfiles()
+pgdlsfiles()
 {
 	pgdDetectBranchChange || return $?
 
@@ -470,24 +466,25 @@ pglsfiles()
 		find_opts=-L
 	else
 		find_opts=
+		shift # Consume the option we just honored
 	fi
 
 	# Emit a list of all interesting files.
-	( cd $src_dir; find $find_opts ./src/ ./contrib/ $vpath_src_dir -type f -iname "*.[chyl]" -or -iname "*.[ch]pp" -or -iname "README*" )
+	( cd $src_dir && find $find_opts ./src/ ./contrib/ $vpath_src_dir -type f -iname "*.[chyl]" -or -iname "*.[ch]pp" -or -iname "README*" )
 }
 
-pgcscope()
+pgdcscope()
 {
 	# If we're not in Postgres sources, cscope in the next command will hang
 	# until interrupted, so bail out sooner if we're not in PG sources.
 	pgdDetectBranchChange || return $?
 
 	# Emit a list of all source files,and make cscope consume that list from stdin
-	pglsfiles --no-symlink | cscope -Rb -f $CSCOPE_DB -i -
+	pgdlsfiles --no-symlink | cscope -Rb -f $CSCOPE_DB -i -
 }
 
 # unset $GIT_DIR
-pgUnsetGitDir()
+pgdUnsetGitDir()
 {
 	unset GIT_DIR
 }
