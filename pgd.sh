@@ -552,7 +552,7 @@ function getPIDTree()
 	CHILD_LIST=$(pgrep -P $PPLIST -d,)
 
 	while [ ! -z "$CHILD_LIST" ] ; do
-	    PPLIST="$PPLIST,$CHILD_LIST"
+		PPLIST="$PPLIST,$CHILD_LIST"
 		CHILD_LIST=$(pgrep -P $CHILD_LIST -d,)
 	done
 

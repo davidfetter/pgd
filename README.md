@@ -1,7 +1,3 @@
-# TODO :
-1) Convert this file to markdown format (consider using http://oscargodson.github.com/EpicEditor/)
-2) Improve and test the instructions.
-
 Postgres Development Environment setup on Linux
 ===============================================
 
