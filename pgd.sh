@@ -562,14 +562,11 @@ function getPIDTree()
 # Show postmaster and all its children, as a process tree
 function pgserverprocesses()
 {
-	# Make sure we're in postgres source directory
-	pgdDetectBranchChange || return $?
+	local server_process_pids=$(pgserverPIDList)
 
-	# Make sure postgres server is running. Suppress output only if successful.
-	# That is, show only stderr stream of the pgstatus().
-	pgstatus >/dev/null || return $?
-
-	local server_process_pids=$(getPIDTree $(head -1 $B/db/data/postmaster.pid))
+	if [ -z "$server_process_pids" ] ; then
+		return 1;
+	fi
 
 	# We use a dummy grep because otherwise the 'u' option causes the long lines
 	# in output to be stripped at terminal edge. With this dummy grep, the long
@@ -577,6 +574,19 @@ function pgserverprocesses()
 	ps fu p $server_process_pids | grep ''
 
 	unset server_process_pids
+}
+
+# Emit a comma-separated list of PIDs of Postmaster and its children
+function pgserverPIDList()
+{
+	# Make sure we're in postgres source directory
+	pgdDetectBranchChange || return $?
+
+	# Make sure postgres server is running. Suppress output only if successful.
+	# That is, show only stderr stream of the pgstatus().
+	pgstatus >/dev/null || return $?
+
+	echo $(getPIDTree $(head -1 $B/db/data/postmaster.pid))
 }
 
 # Show a list (actually, forest) of all processes related to postgres.
