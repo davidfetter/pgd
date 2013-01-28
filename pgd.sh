@@ -52,6 +52,13 @@ pgdSetVariables()
 	vxsSaved_LD_LIBRARY_PATH=$LD_LIBRARY_PATH
 	export LD_LIBRARY_PATH=$pgdPREFIX/lib:$LD_LIBRARY_PATH
 
+	# Tell ccache to use hardlinks instead of copying files.
+	#
+	# NOTE: We don't need to set CCACHE_BASEDIR because of the way we use the
+	# source files from the same directory.
+	pgdSaved_CCACHE_HARDLINK=$CCACHE_HARDLINK
+	export CCACHE_HARDLINK=1
+
 	# This will do its job in VPATH builds, and nothing in non-VPATH builds
 	mkdir -p $B
 
@@ -73,6 +80,11 @@ pgdInvalidateVariables()
 		export PATH=$pgdSaved_PATH
 	fi
 	unset pgdSaved_PATH
+
+	if [ "x$pgdSaved_CCACHE_HARDLINK" != "x" ] ; then
+		export CCACHE_HARDLINK=$pgdSaved_CCACHE_HARDLINK
+	fi
+	unset pgdSaved_CCACHE_HARDLINK
 
 	if [ "x$pgdSaved_LD_LIBRARY_PATH" != "x" ] ; then
 		export LD_LIBRARY_PATH=$pgdSaved_LD_LIBRARY_PATH
