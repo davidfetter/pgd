@@ -298,8 +298,10 @@ pgdSetPGSUNAME()
 
 	if [ "x$pgdFLAVOR" = "xpostgres" ] ; then
 		pgdPGSUNAME=postgres
+		pgdDBNAME=postgres
 	elif [ "x$pgdFLAVOR" = "xedb" ] ; then
-		pgdPGSUNAME=edb
+		pgdPGSUNAME=enterprisedb
+		pgdDBNAME=edb
 	fi
 }
 
@@ -317,9 +319,10 @@ pgsql()
 		pgdSetSTARTShell
 	fi
 
-	# By default connect as superuser. This will be overridden if the user calls
-	# calls this function as `pgsql -U someothername`
-	$pgdSTART$pgdPREFIX/bin/$pgdPSQL -U $pgdPGSUNAME "$@"
+	# By default connect as superuser, to the default database. This will be
+	# overridden if the user calls this function as
+	# `pgsql -U someotherUser -d someotherDB`
+	$pgdSTART$pgdPREFIX/bin/$pgdPSQL -U $pgdPGSUNAME -d $pgdDBNAME "$@"
 
 	local ret_code=$?
 
