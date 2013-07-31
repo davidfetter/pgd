@@ -556,7 +556,7 @@ if [ "x$BASH_SOURCE" != "x" ] ; then
 fi
 
 # Emit a comma separated list of pids of all processes in this process' tree
-function getPIDTree()
+getPIDTree()
 {
 	PID=$1
 	if [ -z $PID ]; then
@@ -575,7 +575,7 @@ function getPIDTree()
 }
 
 # Show postmaster and all its children, as a process tree
-function pgserverprocesses()
+pgserverprocesses()
 {
 	local server_process_pids=$(pgserverPIDList)
 
@@ -592,7 +592,7 @@ function pgserverprocesses()
 }
 
 # Emit a comma-separated list of PIDs of Postmaster and its children
-function pgserverPIDList()
+pgserverPIDList()
 {
 	# Make sure we're in postgres source directory
 	pgdDetectBranchChange || return $?
@@ -605,7 +605,7 @@ function pgserverPIDList()
 }
 
 # Show a list (actually, forest) of all processes related to postgres.
-function pgshowprocesses()
+pgshowprocesses()
 {
 	# Exclude the 'grep' processes from the list
 	#
@@ -615,7 +615,7 @@ function pgshowprocesses()
 	ps faux | grep -vw grep | grep -wE 'postmaster|postgres'
 }
 
-function createBuildRootReadme()
+createBuildRootReadme()
 {
 	cat > $pgdBUILD_ROOT/README << EOF
 This directory is managed by pgd (https://github.com/gurjeet/pgd).
@@ -632,7 +632,7 @@ EOF
 # choose how they want to name their branches. Function wasn't complete, but
 # keeping it around in case I want to implement it for private use.
 : << 'COMMENT'
-function pgdBuildStableBranches()
+pgdBuildStableBranches()
 {
 	# `git-branch -r` output looks like this:
 	#	origin/REL8_1_STABLE
