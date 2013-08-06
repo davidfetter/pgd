@@ -561,6 +561,7 @@ getPIDTree()
 	PID=$1
 	if [ -z $PID ]; then
 	    echo "ERROR: No pid specified" 1>&2
+		return 1
 	fi
 
 	PPLIST=$PID
