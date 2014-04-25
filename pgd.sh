@@ -452,7 +452,7 @@ pgmake()
 
 	# Append "$@" to the command so that we can do `pgmake -C src/backend/`, or
 	# anything similar. `make` allows multiple -C options, and does the right thing
-	make -C "$B" "$@"
+	make -C "$B" --no-print-directory "$@"
 
 	return $?
 }
@@ -558,14 +558,14 @@ fi
 # Emit a comma separated list of pids of all processes in this process' tree
 getPIDTree()
 {
-	PID=$1
+	local PID=$1
 	if [ -z $PID ]; then
 	    echo "ERROR: No pid specified" 1>&2
 		return 1
 	fi
 
-	PPLIST=$PID
-	CHILD_LIST=$(pgrep -P $PPLIST -d,)
+	local PPLIST=$PID
+	local CHILD_LIST=$(pgrep -P $PPLIST -d,)
 
 	while [ ! -z "$CHILD_LIST" ] ; do
 		PPLIST="$PPLIST,$CHILD_LIST"
