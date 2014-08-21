@@ -658,9 +658,10 @@ COMMENT
 # Append branch detection code to $PROMPT_COMMAND so that we can detect Git
 # branch change ASAP.
 #
-# A semicolon at the beginning of $PROMPT_COMMAND causes an error, so replace an
-# empty $PROMPT_COMMAND with a : which is legal Bash syntax.
-PROMPT_COMMAND=${PROMPT_COMMAND:-:}';pgdDetectBranchChange >/dev/null 2>&1'
+PROMPT_COMMAND="${PROMPT_COMMAND:-:;}"	# If empty, substitute a no-op
+# If it doesn't end with a semi-colon, append one.
+PROMPT_COMMAND="${PROMPT_COMMAND}$( [[ $(echo -n ${PROMPT_COMMAND} | tail -c 1) == ';' ]] && echo '' || echo ';' )"
+PROMPT_COMMAND=${PROMPT_COMMAND}'pgdDetectBranchChange >/dev/null 2>&1'
 
 # If the script was invoked with some parameters, then assume $1 to be a
 # function's name (possibly defined in this file), and pass the rest of the
