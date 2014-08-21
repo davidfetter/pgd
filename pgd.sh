@@ -450,9 +450,17 @@ pgmake()
 {
 	pgdDetectBranchChange || return $?
 
+	# Use GNU-make, if available
+	which gmake >/dev/null 2>&1
+	if [ $? == "0" ] ; then
+		MAKER=gmake
+	else
+		MAKER=make
+	fi
+
 	# Append "$@" to the command so that we can do `pgmake -C src/backend/`, or
 	# anything similar. `make` allows multiple -C options, and does the right thing
-	make -C "$B" --no-print-directory "$@"
+	$MAKER -C "$B" --no-print-directory "$@"
 
 	return $?
 }
