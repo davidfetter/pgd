@@ -92,7 +92,7 @@ pgdInvalidateVariables()
 	unset pgdSaved_LD_LIBRARY_PATH
 
 	if [ "x$pgdSaved_PGDATA" != "x" ] ; then
-		PGDATA=$pgdSaved_PGDATA
+		export PGDATA=$pgdSaved_PGDATA
 	else
 		unset PGDATA
 	fi
@@ -207,9 +207,9 @@ pgdSetPGDATA()
 	if [ $? = "0" ] ; then
 		# If the optional parameter is not provided
 		if [ "x$1" = "x" ] ; then
-			PGDATA=$pgdPREFIX/data
+			export PGDATA=$pgdPREFIX/data
 		else # .. use the data directory provided by the user
-			PGDATA=`cd $1; pwd`
+			export PGDATA=`cd $1; pwd`
 		fi
 
 		return 0
