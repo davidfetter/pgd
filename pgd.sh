@@ -503,7 +503,7 @@ pgdlsfiles()
 	fi
 
 	# Emit a list of all interesting files.
-	( cd $src_dir && find $find_opts ./src/ ./contrib/ $vpath_src_dir -type f -iname "*.[chyl]" -or -iname "*.[ch]pp" -or -iname "README*" )
+	( cd $src_dir && find $find_opts ./src/ ./contrib/ "$vpath_src_dir" -type f -iname "*.[chyl]" -or -iname "*.[ch]pp" -or -iname "README*" )
 }
 
 pgdcscope()
@@ -576,6 +576,8 @@ getPIDTree()
 	local CHILD_LIST=$(pgrep -P $PPLIST -d,)
 
 	while [ ! -z "$CHILD_LIST" ] ; do
+		# Remove trailing comma, if any
+		CHILD_LIST=$(echo $CHILD_LIST | sed 's/,$//')
 		PPLIST="$PPLIST,$CHILD_LIST"
 		CHILD_LIST=$(pgrep -P $CHILD_LIST -d,)
 	done
@@ -595,7 +597,7 @@ pgserverprocesses()
 	# We use a dummy grep because otherwise the 'u' option causes the long lines
 	# in output to be stripped at terminal edge. With this dummy grep, the long
 	# lines wrap around to next line.
-	ps fu p $server_process_pids | grep ''
+	ps fu -p $server_process_pids | grep ''
 
 	unset server_process_pids
 }
