@@ -639,6 +639,46 @@ stored in the database under that directory will also be lost.
 EOF
 }
 
+pgdCMakelistsGenerate()
+{
+	# When trying to enhance this function to generate CMakeLists.txt for other
+	# parts of Postgres (contrib, bin, interfaces) do remember to see the accepted
+	# answer to this SO question:
+	#
+	# http://stackoverflow.com/questions/9673326/cmakelists-txt-files-for-multiple-libraries-and-executables
+
+	# Save stdout in FD 4, and open CMakeLists.txt as stdout
+	exec 4<&1
+	exec 1>CMakeLists.txt
+
+	echo 'cmake_minimum_required(VERSION 3.2)'
+	echo
+	echo 'project(Postgres)'
+
+	echo
+	echo 'configure_file (
+		"${PROJECT_SOURCE_DIR}/src/include/pg_config.h.in"
+		"${PROJECT_BINARY_DIR}/src/include/pg_config.h"
+		)'
+
+	echo
+	echo 'include_directories(Postgres ./src/include)'
+	echo 'include_directories("${PROJECT_BINARY_DIR}/src/include")'
+
+	echo
+	echo 'set(BACKEND_SOURCE_FILES'
+
+	find src/backend src/common \( -type f -name '*.c' -o -name '*.h' \) -printf '\t%p\n'
+
+	echo ')'
+
+	echo
+	echo 'add_executable(postgres ${BACKEND_SOURCE_FILES})'
+
+	# Restore stdout from FD 4
+	exec 1<&4
+}
+
 # Commented out function; I don't want to make decisions for people. They can
 # choose how they want to name their branches. Function wasn't complete, but
 # keeping it around in case I want to implement it for private use.
