@@ -437,11 +437,23 @@ pgconfigure()
 		fi
 	fi
 
+	case $OSTYPE in
+	darwin*)
+		# The libedit library (aliased as libreadline on MacOS) is not very
+		# advanced. If we have installed libreadline using MacPorts, let's use
+		# that for the utilities like psql.
+		local pgdLDFLAGS="${LDFLAGS} -L/opt/local/lib/"
+		local pgdCPPFLAGS="${CPPFLAGS} -I/opt/local/include"
+		;;
+	*)
+		;;
+	esac
+
 	# If $ccacher variable is not set, then ./configure behaves as if CC variable
 	# was not specified, and uses the default mechanism to find a compiler.
 	( mkdir -p $B	\
 		&& cd $B	\
-		&& $src_dir/configure --prefix=$pgdPREFIX CC="${ccacher}" --enable-debug --enable-cassert CFLAGS=-O0 --enable-depend --enable-thread-safety --with-openssl "$@" )
+		&& $src_dir/configure --prefix=$pgdPREFIX CC="${ccacher}" --enable-debug --enable-cassert CFLAGS=-O0 CPPFLAGS="${pgdCPPFLAGS}" LDFLAGS="${pgdLDFLAGS}" --enable-depend --enable-thread-safety --with-openssl "$@" )
 
 	return $?
 }
