@@ -9,7 +9,7 @@
 # setupDevEnv.sh pgconfigure --with-bonjour
 #
 # where pgconfigure is a function defined in this script. The above command will
-# invike pgconfigure() function with parameter --with-bonjour.
+# invoke pgconfigure() function with parameter --with-bonjour.
 #
 # This is helpful in situations where an IDE (eg. NetBeans) allows you to
 # execute scripts with parameters to do some custom action.
@@ -52,7 +52,7 @@ pgdSetVariables()
 	vxsSaved_LD_LIBRARY_PATH=$LD_LIBRARY_PATH
 	export LD_LIBRARY_PATH=$pgdPREFIX/lib:$LD_LIBRARY_PATH
 
-	# Tell ccache to use hardlinks instead of copying files.
+	# Tell ccache to use hard links instead of copying files.
 	#
 	# NOTE: We don't need to set CCACHE_BASEDIR because of the way we use the
 	# source files from the same directory.
@@ -179,7 +179,7 @@ pgdSetBuildDirectory()
 	return 0
 }
 
-# Set Postgres' installation prefix directory
+# Set PostgreSQL's installation prefix directory
 pgdSetPrefix()
 {
 	if [ "x$pgdBRANCH" = "x" ] ; then
@@ -254,7 +254,7 @@ pgdSetPGFlavor()
 	fi
 
 	if [ ! -f $src_dir/configure.in ] ; then
-		echo "WARNING: Are you sure that $src_dir is a Postgres source directory?" 1>&2
+		echo "WARNING: Are you sure that $src_dir is a PostgreSQL source directory?" 1>&2
 		return 1
 	fi
 
@@ -321,7 +321,7 @@ pgsql()
 
 	# By default connect as superuser, to the default database. This will be
 	# overridden if the user calls this function as
-	# `pgsql -U someotherUser -d someotherDB`
+	# `psql -U someotherUser -d someotherDB`
 	$pgdSTART$pgdPREFIX/bin/$pgdPSQL -U $pgdPGSUNAME -d $pgdDBNAME "$@"
 
 	local ret_code=$?
